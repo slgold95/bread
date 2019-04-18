@@ -34,6 +34,9 @@ class ShaderProgram {
   attrTransformC2: number; 
   attrTransformC3: number; 
   attrTransformC4: number; 
+  // slider values
+  attrMinPos: number;
+  attrMaxPos: number;
 
   unifModel: WebGLUniformLocation;
   unifModelInvTr: WebGLUniformLocation;
@@ -47,7 +50,6 @@ class ShaderProgram {
 
   unifSampler1: WebGLUniformLocation;
   unifSampler3D: WebGLUniformLocation; 
-  unifMinX: WebGLUniformLocation; 
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -70,6 +72,9 @@ class ShaderProgram {
     this.attrTransformC2 = gl.getAttribLocation(this.prog, "vs_TransformC2");
     this.attrTransformC3 = gl.getAttribLocation(this.prog, "vs_TransformC3");
     this.attrTransformC4 = gl.getAttribLocation(this.prog, "vs_TransformC4");
+    // from gui slider
+    this.attrMinPos = gl.getAttribLocation(this.prog, "vs_minPos"); 
+    this.attrMaxPos = gl.getAttribLocation(this.prog, "vs_maxPos");
 
     this.unifModel      = gl.getUniformLocation(this.prog, "u_Model");
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
@@ -82,7 +87,6 @@ class ShaderProgram {
     this.unifDimensions = gl.getUniformLocation(this.prog, "u_Dimensions");
     this.unifSampler1   = gl.getUniformLocation(this.prog, "u_Texture");
     this.unifSampler3D = gl.getUniformLocation(this.prog, "u_Texture3D");
-    this.unifMinX = gl.getUniformLocation(this.prog, "u_minX");
   }
 
    // Bind the given Texture to the given texture unit
@@ -163,10 +167,17 @@ class ShaderProgram {
   }
 
   // from gui slider value
-  setMinX(min: number) {
+  setMinPos(min: vec3) {
     this.use();
-    if (this.unifMinX !== -1) {
-      gl.uniform1f(this.unifMinX, min);
+    if (this.attrMinPos !== -1) {
+      gl.vertexAttrib3f(this.attrMinPos, min[0], min[1], min[2]);      
+    }
+  }
+
+  setMaxPos(max: vec3) {
+    this.use();
+    if (this.attrMaxPos !== -1) {
+      gl.vertexAttrib3f(this.attrMaxPos, max[0], max[1], max[2]);
     }
   }
 
@@ -174,6 +185,8 @@ class ShaderProgram {
     this.use();
 
     if (this.attrPos != -1 && d.bindPos()) {
+      /*console.log("attrPos")
+      console.log(this.attrPos)*/
       gl.enableVertexAttribArray(this.attrPos);
       gl.vertexAttribPointer(this.attrPos, 4, gl.FLOAT, false, 0, 0);
       gl.vertexAttribDivisor(this.attrPos, 0); // Advance 1 index in pos VBO for each vertex
@@ -202,9 +215,18 @@ class ShaderProgram {
       gl.vertexAttribPointer(this.attrUV, 2, gl.FLOAT, false, 0, 0);
       gl.vertexAttribDivisor(this.attrUV, 0); // Advance 1 index in pos VBO for each vertex
     }
+
+    // vectors for min and max positions from gui slider
+    if (this.attrMinPos != -1 && d.bindMinPos()) {
+      gl.enableVertexAttribArray(this.attrMinPos);
+      gl.vertexAttribPointer(this.attrMinPos, 4, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrMinPos, 1); // Advance 1 index in nor VBO for each vertex
+    }
     
     // TODO: Set up attribute data for additional instanced rendering data as needed
     if (this.attrTransformC1 != -1 && d.bindTransformC1()) {
+      /*console.log("attrTransformC1")
+      console.log(this.attrTransformC1)*/
       gl.enableVertexAttribArray(this.attrTransformC1);
       gl.vertexAttribPointer(this.attrTransformC1, 4, gl.FLOAT, false, 0, 0);
       gl.vertexAttribDivisor(this.attrTransformC1, 1); // Advance 1 index in VBO

@@ -37,7 +37,7 @@ export class Texture3D {
 
     // get a javascript image locally and load it. not instant but will auto-replace white pixel
     
-    //const img = new Image();
+    const img = new Image();
     
     let SIZE: number = 200;
     //let raw: string = readFile();
@@ -52,22 +52,22 @@ export class Texture3D {
 
     if(clampVert == 0) {   
       //debugger;   
-    	//img.onload = function() {
+    	img.onload = function() {
         //debugger;
         console.log("3D: image onload function (if)");
     		this.bindTex();
-        //gl.texImage3D(gl.TEXTURE_3D, lvl, formatDst, img.width, img.height, phDepth, 0, formatSrc, formatBit, img);
-        gl.texImage3D(gl.TEXTURE_3D, lvl, formatDst, SIZE, SIZE, SIZE, 0, formatSrc, formatBit, data);
+        gl.texImage3D(gl.TEXTURE_3D, lvl, formatDst, img.width, img.height, phDepth, 0, formatSrc, formatBit, img);
+        //gl.texImage3D(gl.TEXTURE_3D, lvl, formatDst, SIZE, SIZE, SIZE, 0, formatSrc, formatBit, data);
     		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-        //gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.REPEAT);
         gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); 
-    	//}.bind(this);
+    	}.bind(this);
   }
   else {
     //debugger;
-    //img.onload = function() {
+    img.onload = function() {
       //debugger;
       console.log("3D: image onload function (else)");
       this.bindTex();
@@ -77,9 +77,9 @@ export class Texture3D {
       gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    //}.bind(this);
+    }.bind(this);
   }
-    //img.src = imgSource; // load the image
+    img.src = imgSource; // load the image
   }
 
 

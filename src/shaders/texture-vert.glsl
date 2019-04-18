@@ -1,4 +1,5 @@
 #version 300 es
+precision highp float;
 
 uniform mat4 u_ViewProj;
 uniform float u_Time;
@@ -17,30 +18,38 @@ in vec4 vs_TransformC2;
 in vec4 vs_TransformC3;
 in vec4 vs_TransformC4;
 
+// from slider value
+in vec3 vs_minPos;
+in vec3 vs_maxPos;
+
 out vec4 fs_Col;
 out vec4 fs_Pos;
 out vec4 fs_Nor; // normals
 
-float sampleVolume(vec3 uv, vec3 p)
-			{
-				//vec3 axis = _AxisRotationMatrix * vec4(p, 0).xyz + 0.5;
-				//float min = step(_SliceMin.x, axis.x) * step(_SliceMin.y, axis.y) * step(_SliceMin.z, axis.z);
-				//float max = step(axis.x, _SliceMax.x) * step(axis.y, _SliceMax.y) * step(axis.z, _SliceMax.z);
-				//return tex3D(_Volume, uv).r * _Intensity * min * max;
-        return 0.0; 
-			}
+out vec3 fs_minPos;
+out vec3 fs_maxPos;
 
 void main() {
     fs_Col = vs_Col;
     fs_Pos = vs_Pos;
     fs_Nor = vs_Nor;
+    // slider values passed
+    fs_minPos = vs_minPos;
+    fs_maxPos = vs_maxPos;
     // vec3 offset = vs_Translate;
     // offset.z = (sin((u_Time + offset.x) * 3.14159 * 0.1) + cos((u_Time + offset.y) * 3.14159 * 0.1)) * 1.5;
     // vec3 billboardPos = offset + vs_Pos.x * u_CameraAxes[0] + vs_Pos.y * u_CameraAxes[1];
     // gl_Position = u_ViewProj * vec4(billboardPos, 1.0);
 
     mat4 overallTransforms = mat4(vs_TransformC1, vs_TransformC2, vs_TransformC3, vs_TransformC4);
-
     vec4 finalPos = overallTransforms * vs_Pos;
+
+    if(vs_Pos.x < vs_minPos.x){
+    //float minFloat = step(vs_minPos.x, 0.0) * step(vs_minPos.y, 1.0) * step(vs_minPos.z, 1.0);
+    gl_Position = u_ViewProj * finalPos;// * minFloat;
+    }
+   else{
     gl_Position = u_ViewProj * finalPos;
+   }
+   
 }

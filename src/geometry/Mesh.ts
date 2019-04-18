@@ -17,6 +17,12 @@ class Mesh extends Drawable {
   transC3: Float32Array;
   transC4: Float32Array;
 
+  t1:Array<any> = []; // transform arrays
+  t2:Array<any> = [];
+  t3:Array<any> = [];
+  t4:Array<any> = [];
+  cArray:Array<any> = [];
+
   objString: string;
 
   constructor(objString: string, center: vec3) {

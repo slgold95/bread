@@ -48,8 +48,8 @@ class MySquare extends Drawable {
     //console.log(`Created mySquare`);
   }
 
-  /*
-  setInstanceVBOs(offsets: Float32Array, colors: Float32Array) {
+  
+  setInstanceVBOsVoxel(offsets: Float32Array, colors: Float32Array) {
     this.colors = colors;
     this.offsets = offsets;
 
@@ -58,7 +58,7 @@ class MySquare extends Drawable {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTranslate);
     gl.bufferData(gl.ARRAY_BUFFER, this.offsets, gl.STATIC_DRAW);
   }
-  */
+  
   // modified method to include columns
   setInstanceVBOs(inC1: Float32Array, inC2: Float32Array, inC3: Float32Array, inC4: Float32Array, colors: Float32Array) {
 

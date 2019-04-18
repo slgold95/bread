@@ -12,6 +12,9 @@ in vec4 fs_Col;
 in vec4 fs_Pos;
 in vec4 fs_Nor; // normals
 
+in vec3 fs_minPos; // mins from slider
+in vec3 fs_maxPos; // maxs from slider
+
 out vec4 out_Col;
 
 void main()
@@ -47,4 +50,8 @@ else if(colorTexture.r == 0.0){
   colorTexture = vec4(0.0, 0.0, 1.0, 1.0);
 }
 out_Col = colorTexture * lightIntensity;
+
+// if(fs_Pos.x < 0.0){
+//   out_Col = vec4(0.0, 1.0, 0.0, 1.0) * lightIntensity;
+// }
 }

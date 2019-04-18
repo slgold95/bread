@@ -222,12 +222,12 @@ void main() {
     {
         // interpolate between dusk and sunset
         // 1-x to offset the negative
-        out_Col = vec4(mix(distSunset,color.rgb, 1.0-x ),1.0);
+        out_Col = vec4(mix(distSunset,color.rgb, 1.0-x ),1.0);        
     }
     //if x between [0, 1] do sunset -> night
     else if(sign(x)>= 0.0)
     {  
         // interpolate between sunset and night
-        out_Col = vec4(mix(color.rgb, distNight, x),1.0);
+        out_Col = vec4(mix(color.rgb, distNight, x),1.0);       
     }
 } // closes main

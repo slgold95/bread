@@ -34,8 +34,9 @@ float lightIntensity = diffuseTerm + ambientTerm;
 
 // use custom coloring for bread instead of fs_Col
 vec3 color = fs_Col.xyz * lightIntensity;
-//out_Col = vec4(clamp(color, 0.0, 1.0), 1.0); // stop colors from blowing out
-
-vec4 colorTexture = texture(u_Texture, fs_Pos.xy);
-out_Col = colorTexture * lightIntensity;
+out_Col = vec4(clamp(color, 0.0, 1.0), 1.0); // stop colors from blowing out
+// out_Col =vec4(1.0);
+//vec4 colorTexture = texture(u_Texture, fs_Pos.xy);
+//out_Col = colorTexture * lightIntensity;
+//out_Col = vec4(1.0, 0.0, 0.0, 1.0) * lightIntensity;
 }

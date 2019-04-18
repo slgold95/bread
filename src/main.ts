@@ -13,6 +13,7 @@ import {readTextFile} from './globals';
 import Mesh from './geometry/Mesh'; // for obj loading
 import Texture from './rendering/gl/Texture';
 import Texture3D from './rendering/gl/Texture3D';
+import Cube from './geometry/Cube';
 
 const controls = {
   'Wahoo': createWahoo,
@@ -21,9 +22,9 @@ const controls = {
   xMin: 0.0,
   yMin: 0.0,
   zMin: 0.0,
-  xMax: 0.0,
-  yMax: 0.0,
-  zMax: 0.0,
+  xMax: 1.0,
+  yMax: 1.0,
+  zMax: 1.0,
 };
 
 // booleans
@@ -31,8 +32,12 @@ let showWahoo: boolean = true;
 let showKnight: boolean = false;
 let showHand: boolean = false;
 
+let currMinX: number;
+
 let mySquare: MySquare;
 let screenQuad: ScreenQuad;
+let voxelCube: Mesh;
+let cubeTS: Cube;
 
 // shapes
 let sphere: MyIcosphere;
@@ -63,6 +68,7 @@ function createHand(): void{
 
 let marioTexture: Texture;
 let wahoo3D: Texture3D;
+let voxelArray: any = []; // array for the vec3
 
 function loadScene() {
   mySquare = new MySquare();
@@ -72,8 +78,28 @@ function loadScene() {
 
   // Mario Texture
   marioTexture = new Texture('./src/binvox/fractal.jpg', 0);
-  //marioTexture = new Texture('./src/binvox/wahoo.raw', 0);
-  wahoo3D = new Texture3D('./src/binvox/wahoo.raw', 0);
+  wahoo3D = new Texture3D('./src/binvox/wahooVoxels.txt', 0);
+
+  // populate the voxel Array
+  //let wahooVoxelString: string = readTextFile('./src/binvox/wahooVoxels.txt');
+  let wahooVoxelString: string = readTextFile('./src/binvox/wahooFullOfVoxels.txt');
+  //console.log(wahooVoxelString);  
+
+  var parsedArray = wahooVoxelString.split('\n');
+  //console.log(parsedArray);
+  for (var i = 0; i < parsedArray.length; i ++){    
+    var newArray = parsedArray[i].split(/[ ,]+/);
+    //console.log(newArray);
+    voxelArray.push(parseFloat(newArray[0])); 
+    voxelArray.push(parseFloat(newArray[1])); 
+    voxelArray.push(parseFloat(newArray[2]));    
+  }
+  // for (var i = 0; i < parsedArray.length; i ++){    
+  //   var newArray = parsedArray[i].split(/[ ,]+/);
+  //   //console.log(newArray);
+  //   voxelArray.push(vec3.fromValues(parseFloat(newArray[0]), parseFloat(newArray[1]),parseFloat(newArray[2])));   
+  // }
+  console.log(voxelArray);
 
   // Sphere - using MyIcosphere
   sphere = new MyIcosphere(vec3.fromValues(0.0, 0.0, 0.0), 1.0, 5);
@@ -83,6 +109,11 @@ function loadScene() {
   let cubeString: string = readTextFile('./src/geometry/cube.obj');
   cubeObj = new Mesh(cubeString, vec3.fromValues(0.0, 0.0, 0.0));
   cubeObj.create();
+  voxelCube = new Mesh(cubeString, vec3.fromValues(0.0, 0.0, 0.0));
+  voxelCube.create();
+
+  cubeTS = new Cube(vec3.fromValues(0.0, 0.0, 0.0));
+  cubeTS.create();
   
   // Wahoo Mesh
   let objWahoo: string = readTextFile('./src/geometry/wahoo.obj');
@@ -128,6 +159,56 @@ function loadScene() {
   sphere.setNumInstances(1); 
   cubeObj.setInstanceVBOs(sphereCol1, sphereCol2, sphereCol3, sphereCol4, sphereColors);
   cubeObj.setNumInstances(1); 
+
+  // Voxels
+  let cubeColorsArray = []; 
+  let cubeCol1Array = []; 
+  let cubeCol2Array = []; 
+  let cubeCol3Array = []; 
+  let cubeCol4Array = [];  
+  let scale: number = 1.0;
+  let numInstances = voxelArray.length/3.0;
+for(var i = 0; i < numInstances * 3; i += 3) {
+  // color
+  cubeColorsArray.push(0.0);
+  cubeColorsArray.push(1.0);
+  cubeColorsArray.push(1.0); // blue
+  cubeColorsArray.push(1.0); // alpha
+  // transform column 1
+  cubeCol1Array.push(scale);
+  cubeCol1Array.push(0.0);
+  cubeCol1Array.push(0.0);
+  cubeCol1Array.push(0.0);
+  // transform column 2
+  cubeCol2Array.push(0.0);
+  cubeCol2Array.push(scale);
+  cubeCol2Array.push(0.0);
+  cubeCol2Array.push(0.0);
+  // transform column 3
+  cubeCol3Array.push(0.0);
+  cubeCol3Array.push(0.0);
+  cubeCol3Array.push(scale);
+  cubeCol3Array.push(0.0);
+  // transform column 4
+  cubeCol4Array.push(voxelArray[i] - 40.0); // minus 34 to center Wahoo at 0
+  cubeCol4Array.push(voxelArray[i + 1] - 40.0);
+  cubeCol4Array.push(voxelArray[i + 2] - 20.0);
+  cubeCol4Array.push(1.0);
+  //console.log("testing: " + voxelArray[i]);
+  //console.log("testing: " + voxelArray[i+1]);
+  //console.log("testing: " + voxelArray[i+2]);
+}
+let cubeCol1: Float32Array = new Float32Array(cubeCol1Array);
+let cubeCol2: Float32Array = new Float32Array(cubeCol2Array);
+let cubeCol3: Float32Array = new Float32Array(cubeCol3Array);
+let cubeCol4: Float32Array = new Float32Array(cubeCol4Array);
+let cubeColors: Float32Array = new Float32Array(cubeColorsArray);
+voxelCube.setInstanceVBOs(cubeCol1, cubeCol2, cubeCol3, cubeCol4, cubeColors);
+voxelCube.setNumInstances(numInstances); 
+console.log('numInstances is: ' + numInstances);
+console.log('voxelArray length/3 is: ' + voxelArray.length/3);  
+//cubeTS.setInstanceVBOs(cubeCol1, cubeCol2, cubeCol3, cubeCol4, cubeColors);
+//cubeTS.setNumInstances(numInstances);
 
   // set up mesh VBOs
   let knightColorsArray: number[] = [0.0, 0.0, 1.0, 1.0]; // blue
@@ -179,12 +260,15 @@ function main() {
   gui.add(controls, 'Wahoo');
   gui.add(controls, 'Knight');
   gui.add(controls, 'Hand');
-  gui.add(controls, 'xMin', -1.0, 1.0).step(0.1);
-  gui.add(controls, 'yMin', -1.0, 1.0).step(0.1);
-  gui.add(controls, 'zMin', -1.0, 1.0).step(0.1);
-  gui.add(controls, 'xMax', -1.0, 1.0).step(0.1);
-  gui.add(controls, 'yMax', -1.0, 1.0).step(0.1);
-  gui.add(controls, 'zMax', -1.0, 1.0).step(0.1);
+  gui.add(controls, 'xMin', 0.0, 10.0).step(1.0);
+  gui.add(controls, 'yMin', 0.0, 1.0).step(0.1);
+  gui.add(controls, 'zMin', 0.0, 1.0).step(0.1);
+  gui.add(controls, 'xMax', 0.0, 1.0).step(0.1);
+  gui.add(controls, 'yMax', 0.0, 1.0).step(0.1);
+  gui.add(controls, 'zMax', 0.0, 1.0).step(0.1);
+
+  // set the gui parameters
+  currMinX = controls.xMin;
   
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -234,7 +318,8 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
 
     // pass gui slider values
-    textureShader.setMinX(controls.xMin);
+    textureShader.setMinPos(vec3.fromValues(controls.xMin, controls.yMin, controls.zMin));
+    textureShader.setMaxPos(vec3.fromValues(controls.xMax, controls.yMax, controls.zMax));
       
     renderer.clear();
     renderer.render(camera, flat, [screenQuad]);
@@ -246,7 +331,9 @@ function main() {
     if(showWahoo && !showKnight && !showHand) {
       //renderer.render(camera, instancedShader, [sphere]);
       //renderer.render(camera, instancedShader, [wahoo]);
-      renderer.render(camera, textureShader, [wahoo]);
+      //renderer.render(camera, textureShader, [wahoo]);
+      renderer.render(camera, instancedShader, [voxelCube]);
+      //renderer.render(camera, instancedShader, [cubeTS]);
     }
     // show the knight only
     if(!showWahoo && showKnight && !showHand) {

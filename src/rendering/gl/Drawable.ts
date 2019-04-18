@@ -16,6 +16,9 @@ abstract class Drawable {
   bufTransformC2: WebGLBuffer;
   bufTransformC3: WebGLBuffer;
   bufTransformC4: WebGLBuffer;
+  // added for final project
+  bufMinPos: WebGLBuffer;
+  bufMaxPos: WebGLBuffer;
 
   idxGenerated: boolean = false;
   posGenerated: boolean = false;
@@ -29,6 +32,9 @@ abstract class Drawable {
   transformC2Generated: boolean = false;
   transformC3Generated: boolean = false;
   transformC4Generated: boolean = false;
+  // added for final project
+  minPosGenerated: boolean = false;
+  maxPosGenerated: boolean = false;
 
   numInstances: number = 0; // How many instances of this Drawable the shader program should draw
 
@@ -166,6 +172,21 @@ abstract class Drawable {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransformC4);
     }
     return this.transformC4Generated;
+  }
+
+  // Added for final project
+  bindMinPos(): boolean {
+    if (this.minPosGenerated) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.bufMinPos);
+    }
+    return this.minPosGenerated;
+  }
+
+  bindMaxPos(): boolean {
+    if (this.maxPosGenerated) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.bufMaxPos);
+    }
+    return this.maxPosGenerated;
   }
 
   elemCount(): number {
