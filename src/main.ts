@@ -114,9 +114,10 @@ for(var i = 0; i < numInstances * 3; i += 3) {
     // do not populate VBOs, skip them entirely
     continue;
   }
-  cubeColorsArray.push(0.0);
-  cubeColorsArray.push(1.0);
-  cubeColorsArray.push(1.0); // blue
+  // colors
+  cubeColorsArray.push(0.0); // R
+  cubeColorsArray.push(1.0); // G
+  cubeColorsArray.push(1.0); // B
   cubeColorsArray.push(1.0); // alpha
   // transform column 1
   cubeCol1Array.push(scale);
@@ -134,8 +135,8 @@ for(var i = 0; i < numInstances * 3; i += 3) {
   cubeCol3Array.push(scale);
   cubeCol3Array.push(0.0);
   // transform column 4
-  cubeCol4Array.push(voxelArray[i] - 40.0); // minus 34 to center Wahoo at 0
-  cubeCol4Array.push(voxelArray[i + 1] - 40.0);
+  cubeCol4Array.push(voxelArray[i] - 50.0); // minus 50 to center Wahoo at 0
+  cubeCol4Array.push(voxelArray[i + 1] - 50.0);
   cubeCol4Array.push(voxelArray[i + 2] - 20.0);
   cubeCol4Array.push(1.0);
   loopNum ++; // use this as the num instances to account for skipped loopings
@@ -150,8 +151,8 @@ voxelCube.setNumInstances(loopNum);
 }
 // -------------------------------------------------------------------------------------------------------
 
-let marioTexture: Texture;
-let wahoo3D: Texture3D;
+// let marioTexture: Texture;
+// let wahoo3D: Texture3D;
 let voxelArray: any = []; // array for the vec3
 
 function loadScene() {
@@ -160,28 +161,14 @@ function loadScene() {
   screenQuad = new ScreenQuad();
   screenQuad.create();
 
-  // Mario Texture
-  marioTexture = new Texture('./src/binvox/fractal.jpg', 0);
-  wahoo3D = new Texture3D('./src/binvox/wahooVoxels.txt', 0);
+  // // Mario Texture
+  // marioTexture = new Texture('./src/binvox/fractal.jpg', 0);
+  // wahoo3D = new Texture3D('./src/binvox/wahooVoxels.txt', 0);
 
   // populate the voxel Array
   // into the array of voxel positions, pass the path to the file to be read
   voxelArray = populateVoxelArray('./src/binvox/wahooFullOfVoxels106.txt'); // populate the voxelArray with data
-
-  
-  // made into a function
-  /*
-  var parsedArray = wahooVoxelString.split('\n');
-  //console.log(parsedArray);
-  for (var i = 0; i < parsedArray.length; i ++){    
-    var newArray = parsedArray[i].split(/[ ,]+/);
-    //console.log(newArray);
-    voxelArray.push(parseFloat(newArray[0])); 
-    voxelArray.push(parseFloat(newArray[1])); 
-    voxelArray.push(parseFloat(newArray[2]));    
-  }
-  */
-  //console.log(voxelArray); 
+  //voxelArray = populateVoxelArray('./src/binvox/wahooOuter106.txt'); // populate the voxelArray with data
 
   // Sphere - using MyIcosphere
   sphere = new MyIcosphere(vec3.fromValues(0.0, 0.0, 0.0), 1.0, 5);
@@ -282,67 +269,6 @@ function loadScene() {
    
 }
 
-/*
-function voxelize(){
-  let cubeColorsArray = []; 
-  let cubeCol1Array = []; 
-  let cubeCol2Array = []; 
-  let cubeCol3Array = []; 
-  let cubeCol4Array = [];  
-  let scale: number = 1.0;
-  let loopNum: number = 0;
-  let numInstances = voxelArray.length/3.0;
-for(var i = 0; i < numInstances * 3; i += 3) {
-  // min and max X
-  let a: number = voxelArray[i];
-  let b: number = voxelArray[i];
-  // min and max Y
-  let c: number = voxelArray[i + 1];
-  let d: number = voxelArray[i + 1];
-  // min and max Z
-  let e: number = voxelArray[i + 2];
-  let f: number = voxelArray[i + 2];
-
-  if (a < currMinX * 10 || b > currMaxX * 10 || c < currMinY * 10 || d > currMaxY * 10 || e < currMinZ * 10 || f > currMaxZ * 10) {
-    // do not populate VBOs, skip them entirely
-    continue;
-  }
-  cubeColorsArray.push(0.0);
-  cubeColorsArray.push(1.0);
-  cubeColorsArray.push(1.0); // blue
-  cubeColorsArray.push(1.0); // alpha
-  // transform column 1
-  cubeCol1Array.push(scale);
-  cubeCol1Array.push(0.0);
-  cubeCol1Array.push(0.0);
-  cubeCol1Array.push(0.0);
-  // transform column 2
-  cubeCol2Array.push(0.0);
-  cubeCol2Array.push(scale);
-  cubeCol2Array.push(0.0);
-  cubeCol2Array.push(0.0);
-  // transform column 3
-  cubeCol3Array.push(0.0);
-  cubeCol3Array.push(0.0);
-  cubeCol3Array.push(scale);
-  cubeCol3Array.push(0.0);
-  // transform column 4
-  cubeCol4Array.push(voxelArray[i] - 40.0); // minus 34 to center Wahoo at 0
-  cubeCol4Array.push(voxelArray[i + 1] - 40.0);
-  cubeCol4Array.push(voxelArray[i + 2] - 20.0);
-  cubeCol4Array.push(1.0);
-  loopNum ++; // use this as the num instances to account for skipped loopings
-}
-let cubeCol1: Float32Array = new Float32Array(cubeCol1Array);
-let cubeCol2: Float32Array = new Float32Array(cubeCol2Array);
-let cubeCol3: Float32Array = new Float32Array(cubeCol3Array);
-let cubeCol4: Float32Array = new Float32Array(cubeCol4Array);
-let cubeColors: Float32Array = new Float32Array(cubeColorsArray);
-voxelCube.setInstanceVBOs(cubeCol1, cubeCol2, cubeCol3, cubeCol4, cubeColors);
-voxelCube.setNumInstances(loopNum); 
-}
-*/
-
 function main() {
   // Initial display for framerate
   const stats = Stats();
@@ -408,8 +334,8 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/texture-frag.glsl')),
   ]);
 
-  instancedShader.bindTexToUnit(instancedShader.unifSampler1, marioTexture, 0);
-  textureShader.bindTexToUnit2(textureShader.unifSampler1, wahoo3D, 0);
+  //instancedShader.bindTexToUnit(instancedShader.unifSampler1, marioTexture, 0);
+  //textureShader.bindTexToUnit2(textureShader.unifSampler1, wahoo3D, 0);
 
   // This function will be called every frame
   function tick() {
