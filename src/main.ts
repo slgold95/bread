@@ -22,9 +22,9 @@ const controls = {
   xMin: 0.0,
   yMin: 0.0,
   zMin: 0.0,
-  xMax: 1.0,
-  yMax: 1.0,
-  zMax: 1.0,
+  xMax: 11.0,
+  yMax: 11.0,
+  zMax: 11.0,
 };
 
 // booleans
@@ -33,6 +33,11 @@ let showKnight: boolean = false;
 let showHand: boolean = false;
 
 let currMinX: number;
+let currMaxX: number;
+let currMinY: number;
+let currMaxY: number;
+let currMinZ: number;
+let currMaxZ: number;
 
 let mySquare: MySquare;
 let screenQuad: ScreenQuad;
@@ -66,6 +71,85 @@ function createHand(): void{
   showHand = true;
 }
 
+// Function to parse the voxel data from .txt file ------------------------------------------------
+function populateVoxelArray(textFilePath: string): any {
+  let voxelString: string = readTextFile(textFilePath);
+  var parsedArray = voxelString.split('\n');
+  let voxelArray: any = []; // array for the vec3s of voxel position data
+  //console.log(parsedArray);
+  for (var i = 0; i < parsedArray.length; i ++){    
+    var newArray = parsedArray[i].split(/[ ,]+/);
+    //console.log(newArray);
+    voxelArray.push(parseFloat(newArray[0])); 
+    voxelArray.push(parseFloat(newArray[1])); 
+    voxelArray.push(parseFloat(newArray[2]));    
+  }
+  return voxelArray;
+}
+// --------------------------------------------------------------------------------------------
+
+// function to populate VBO data for the voxels
+// pass in the mesh (instance cubes), pass in the voxel array to grab data from
+function populateVoxelVOBs(voxelCube: Mesh, voxelArray: any[]){
+  let cubeColorsArray = []; 
+  let cubeCol1Array = []; 
+  let cubeCol2Array = []; 
+  let cubeCol3Array = []; 
+  let cubeCol4Array = [];  
+  let scale: number = 1.0;
+  let loopNum: number = 0;
+  let numInstances = voxelArray.length/3.0;
+for(var i = 0; i < numInstances * 3; i += 3) {
+  // min and max X
+  let a: number = voxelArray[i];
+  let b: number = voxelArray[i];
+  // min and max Y
+  let c: number = voxelArray[i + 1];
+  let d: number = voxelArray[i + 1];
+  // min and max Z
+  let e: number = voxelArray[i + 2];
+  let f: number = voxelArray[i + 2];
+
+  if (a < currMinX * 10 || b > currMaxX * 10 || c < currMinY * 10 || d > currMaxY * 10 || e < currMinZ * 10 || f > currMaxZ * 10) {
+    // do not populate VBOs, skip them entirely
+    continue;
+  }
+  cubeColorsArray.push(0.0);
+  cubeColorsArray.push(1.0);
+  cubeColorsArray.push(1.0); // blue
+  cubeColorsArray.push(1.0); // alpha
+  // transform column 1
+  cubeCol1Array.push(scale);
+  cubeCol1Array.push(0.0);
+  cubeCol1Array.push(0.0);
+  cubeCol1Array.push(0.0);
+  // transform column 2
+  cubeCol2Array.push(0.0);
+  cubeCol2Array.push(scale);
+  cubeCol2Array.push(0.0);
+  cubeCol2Array.push(0.0);
+  // transform column 3
+  cubeCol3Array.push(0.0);
+  cubeCol3Array.push(0.0);
+  cubeCol3Array.push(scale);
+  cubeCol3Array.push(0.0);
+  // transform column 4
+  cubeCol4Array.push(voxelArray[i] - 40.0); // minus 34 to center Wahoo at 0
+  cubeCol4Array.push(voxelArray[i + 1] - 40.0);
+  cubeCol4Array.push(voxelArray[i + 2] - 20.0);
+  cubeCol4Array.push(1.0);
+  loopNum ++; // use this as the num instances to account for skipped loopings
+}
+let cubeCol1: Float32Array = new Float32Array(cubeCol1Array);
+let cubeCol2: Float32Array = new Float32Array(cubeCol2Array);
+let cubeCol3: Float32Array = new Float32Array(cubeCol3Array);
+let cubeCol4: Float32Array = new Float32Array(cubeCol4Array);
+let cubeColors: Float32Array = new Float32Array(cubeColorsArray);
+voxelCube.setInstanceVBOs(cubeCol1, cubeCol2, cubeCol3, cubeCol4, cubeColors);
+voxelCube.setNumInstances(loopNum); 
+}
+// -------------------------------------------------------------------------------------------------------
+
 let marioTexture: Texture;
 let wahoo3D: Texture3D;
 let voxelArray: any = []; // array for the vec3
@@ -81,10 +165,12 @@ function loadScene() {
   wahoo3D = new Texture3D('./src/binvox/wahooVoxels.txt', 0);
 
   // populate the voxel Array
-  //let wahooVoxelString: string = readTextFile('./src/binvox/wahooVoxels.txt');
-  let wahooVoxelString: string = readTextFile('./src/binvox/wahooFullOfVoxels.txt');
-  //console.log(wahooVoxelString);  
+  // into the array of voxel positions, pass the path to the file to be read
+  voxelArray = populateVoxelArray('./src/binvox/wahooFullOfVoxels106.txt'); // populate the voxelArray with data
 
+  
+  // made into a function
+  /*
   var parsedArray = wahooVoxelString.split('\n');
   //console.log(parsedArray);
   for (var i = 0; i < parsedArray.length; i ++){    
@@ -94,12 +180,8 @@ function loadScene() {
     voxelArray.push(parseFloat(newArray[1])); 
     voxelArray.push(parseFloat(newArray[2]));    
   }
-  // for (var i = 0; i < parsedArray.length; i ++){    
-  //   var newArray = parsedArray[i].split(/[ ,]+/);
-  //   //console.log(newArray);
-  //   voxelArray.push(vec3.fromValues(parseFloat(newArray[0]), parseFloat(newArray[1]),parseFloat(newArray[2])));   
-  // }
-  console.log(voxelArray);
+  */
+  //console.log(voxelArray); 
 
   // Sphere - using MyIcosphere
   sphere = new MyIcosphere(vec3.fromValues(0.0, 0.0, 0.0), 1.0, 5);
@@ -109,8 +191,12 @@ function loadScene() {
   let cubeString: string = readTextFile('./src/geometry/cube.obj');
   cubeObj = new Mesh(cubeString, vec3.fromValues(0.0, 0.0, 0.0));
   cubeObj.create();
+
+  // For instance rendering the voxels ------------------------------------------------------
   voxelCube = new Mesh(cubeString, vec3.fromValues(0.0, 0.0, 0.0));
   voxelCube.create();
+  populateVoxelVOBs(voxelCube, voxelArray);
+  // -----------------------------------------------------------------------------------------
 
   cubeTS = new Cube(vec3.fromValues(0.0, 0.0, 0.0));
   cubeTS.create();
@@ -160,56 +246,6 @@ function loadScene() {
   cubeObj.setInstanceVBOs(sphereCol1, sphereCol2, sphereCol3, sphereCol4, sphereColors);
   cubeObj.setNumInstances(1); 
 
-  // Voxels
-  let cubeColorsArray = []; 
-  let cubeCol1Array = []; 
-  let cubeCol2Array = []; 
-  let cubeCol3Array = []; 
-  let cubeCol4Array = [];  
-  let scale: number = 1.0;
-  let numInstances = voxelArray.length/3.0;
-for(var i = 0; i < numInstances * 3; i += 3) {
-  // color
-  cubeColorsArray.push(0.0);
-  cubeColorsArray.push(1.0);
-  cubeColorsArray.push(1.0); // blue
-  cubeColorsArray.push(1.0); // alpha
-  // transform column 1
-  cubeCol1Array.push(scale);
-  cubeCol1Array.push(0.0);
-  cubeCol1Array.push(0.0);
-  cubeCol1Array.push(0.0);
-  // transform column 2
-  cubeCol2Array.push(0.0);
-  cubeCol2Array.push(scale);
-  cubeCol2Array.push(0.0);
-  cubeCol2Array.push(0.0);
-  // transform column 3
-  cubeCol3Array.push(0.0);
-  cubeCol3Array.push(0.0);
-  cubeCol3Array.push(scale);
-  cubeCol3Array.push(0.0);
-  // transform column 4
-  cubeCol4Array.push(voxelArray[i] - 40.0); // minus 34 to center Wahoo at 0
-  cubeCol4Array.push(voxelArray[i + 1] - 40.0);
-  cubeCol4Array.push(voxelArray[i + 2] - 20.0);
-  cubeCol4Array.push(1.0);
-  //console.log("testing: " + voxelArray[i]);
-  //console.log("testing: " + voxelArray[i+1]);
-  //console.log("testing: " + voxelArray[i+2]);
-}
-let cubeCol1: Float32Array = new Float32Array(cubeCol1Array);
-let cubeCol2: Float32Array = new Float32Array(cubeCol2Array);
-let cubeCol3: Float32Array = new Float32Array(cubeCol3Array);
-let cubeCol4: Float32Array = new Float32Array(cubeCol4Array);
-let cubeColors: Float32Array = new Float32Array(cubeColorsArray);
-voxelCube.setInstanceVBOs(cubeCol1, cubeCol2, cubeCol3, cubeCol4, cubeColors);
-voxelCube.setNumInstances(numInstances); 
-console.log('numInstances is: ' + numInstances);
-console.log('voxelArray length/3 is: ' + voxelArray.length/3);  
-//cubeTS.setInstanceVBOs(cubeCol1, cubeCol2, cubeCol3, cubeCol4, cubeColors);
-//cubeTS.setNumInstances(numInstances);
-
   // set up mesh VBOs
   let knightColorsArray: number[] = [0.0, 0.0, 1.0, 1.0]; // blue
   let knightCol1Array: number[] = [5.0, 0, 0, 0]; // scale x
@@ -246,6 +282,67 @@ console.log('voxelArray length/3 is: ' + voxelArray.length/3);
    
 }
 
+/*
+function voxelize(){
+  let cubeColorsArray = []; 
+  let cubeCol1Array = []; 
+  let cubeCol2Array = []; 
+  let cubeCol3Array = []; 
+  let cubeCol4Array = [];  
+  let scale: number = 1.0;
+  let loopNum: number = 0;
+  let numInstances = voxelArray.length/3.0;
+for(var i = 0; i < numInstances * 3; i += 3) {
+  // min and max X
+  let a: number = voxelArray[i];
+  let b: number = voxelArray[i];
+  // min and max Y
+  let c: number = voxelArray[i + 1];
+  let d: number = voxelArray[i + 1];
+  // min and max Z
+  let e: number = voxelArray[i + 2];
+  let f: number = voxelArray[i + 2];
+
+  if (a < currMinX * 10 || b > currMaxX * 10 || c < currMinY * 10 || d > currMaxY * 10 || e < currMinZ * 10 || f > currMaxZ * 10) {
+    // do not populate VBOs, skip them entirely
+    continue;
+  }
+  cubeColorsArray.push(0.0);
+  cubeColorsArray.push(1.0);
+  cubeColorsArray.push(1.0); // blue
+  cubeColorsArray.push(1.0); // alpha
+  // transform column 1
+  cubeCol1Array.push(scale);
+  cubeCol1Array.push(0.0);
+  cubeCol1Array.push(0.0);
+  cubeCol1Array.push(0.0);
+  // transform column 2
+  cubeCol2Array.push(0.0);
+  cubeCol2Array.push(scale);
+  cubeCol2Array.push(0.0);
+  cubeCol2Array.push(0.0);
+  // transform column 3
+  cubeCol3Array.push(0.0);
+  cubeCol3Array.push(0.0);
+  cubeCol3Array.push(scale);
+  cubeCol3Array.push(0.0);
+  // transform column 4
+  cubeCol4Array.push(voxelArray[i] - 40.0); // minus 34 to center Wahoo at 0
+  cubeCol4Array.push(voxelArray[i + 1] - 40.0);
+  cubeCol4Array.push(voxelArray[i + 2] - 20.0);
+  cubeCol4Array.push(1.0);
+  loopNum ++; // use this as the num instances to account for skipped loopings
+}
+let cubeCol1: Float32Array = new Float32Array(cubeCol1Array);
+let cubeCol2: Float32Array = new Float32Array(cubeCol2Array);
+let cubeCol3: Float32Array = new Float32Array(cubeCol3Array);
+let cubeCol4: Float32Array = new Float32Array(cubeCol4Array);
+let cubeColors: Float32Array = new Float32Array(cubeColorsArray);
+voxelCube.setInstanceVBOs(cubeCol1, cubeCol2, cubeCol3, cubeCol4, cubeColors);
+voxelCube.setNumInstances(loopNum); 
+}
+*/
+
 function main() {
   // Initial display for framerate
   const stats = Stats();
@@ -260,15 +357,20 @@ function main() {
   gui.add(controls, 'Wahoo');
   gui.add(controls, 'Knight');
   gui.add(controls, 'Hand');
-  gui.add(controls, 'xMin', 0.0, 10.0).step(1.0);
-  gui.add(controls, 'yMin', 0.0, 1.0).step(0.1);
-  gui.add(controls, 'zMin', 0.0, 1.0).step(0.1);
-  gui.add(controls, 'xMax', 0.0, 1.0).step(0.1);
-  gui.add(controls, 'yMax', 0.0, 1.0).step(0.1);
-  gui.add(controls, 'zMax', 0.0, 1.0).step(0.1);
+  gui.add(controls, 'xMin', 0.0, 11.0).step(0.25);
+  gui.add(controls, 'yMin', 0.0, 11.0).step(0.25);
+  gui.add(controls, 'zMin', 0.0, 11.0).step(0.25);
+  gui.add(controls, 'xMax', 0.0, 11.0).step(0.25);
+  gui.add(controls, 'yMax', 0.0, 11.0).step(0.25);
+  gui.add(controls, 'zMax', 0.0, 11.0).step(0.25);
 
   // set the gui parameters
   currMinX = controls.xMin;
+  currMaxX = controls.xMax;
+  currMinY = controls.yMin;
+  currMaxY = controls.yMax;
+  currMinZ = controls.zMin;
+  currMaxZ = controls.zMax;
   
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -327,14 +429,39 @@ function main() {
     //   sphere, 
     //   wahoo,     
     // ]);
+
     // Show Wahoo only
-    if(showWahoo && !showKnight && !showHand) {
-      //renderer.render(camera, instancedShader, [sphere]);
-      //renderer.render(camera, instancedShader, [wahoo]);
-      //renderer.render(camera, textureShader, [wahoo]);
+    if(showWahoo && !showKnight && !showHand) {      
       renderer.render(camera, instancedShader, [voxelCube]);
-      //renderer.render(camera, instancedShader, [cubeTS]);
-    }
+       // slicing through mesh
+       // Min and Max X
+       if((currMinX - controls.xMin) != 0.0){
+       currMinX = controls.xMin;
+       populateVoxelVOBs(voxelCube, voxelArray);
+       }
+       if((currMaxX - controls.xMax) != 0.0){
+       currMaxX = controls.xMax;
+       populateVoxelVOBs(voxelCube, voxelArray);
+       }
+       // Min and Max Y
+       if((currMinY - controls.yMin) != 0.0){
+       currMinY = controls.yMin;      
+       populateVoxelVOBs(voxelCube, voxelArray);
+     }
+     if((currMaxY - controls.yMax) != 0.0){
+      currMaxY = controls.yMax;
+      populateVoxelVOBs(voxelCube, voxelArray);
+     }
+     // Min and Max Z
+     if((currMinZ - controls.zMin) != 0.0){
+      currMinZ = controls.zMin;      
+      populateVoxelVOBs(voxelCube, voxelArray);
+     }
+     if((currMaxZ - controls.zMax) != 0.0){
+      currMaxZ = controls.zMax;
+      populateVoxelVOBs(voxelCube, voxelArray);
+     }      
+    } // closes the if to render the wahoo only
     // show the knight only
     if(!showWahoo && showKnight && !showHand) {
       renderer.render(camera, instancedShader, [knight]);      
@@ -344,6 +471,36 @@ function main() {
       //renderer.render(camera, instancedShader, [wahoo]);
       renderer.render(camera, instancedShader, [hand]); // the coloring is strange? maybe reverse the normals
     }
+
+    // // slicing through mesh
+    // // Min and Max X
+    // if((currMinX - controls.xMin) != 0.0){
+    //   currMinX = controls.xMin;
+    //   //console.log(currMinX);
+    //   voxelize();
+    // }
+    // if((currMaxX - controls.xMax) != 0.0){
+    //   currMaxX = controls.xMax;
+    //   voxelize();
+    // }
+    // // Min and Max Y
+    // if((currMinY - controls.yMin) != 0.0){
+    //   currMinY = controls.yMin;      
+    //   voxelize();
+    // }
+    // if((currMaxY - controls.yMax) != 0.0){
+    //   currMaxY = controls.yMax;
+    //   voxelize();
+    // }
+    // // Min and Max Z
+    // if((currMinZ - controls.zMin) != 0.0){
+    //   currMinZ = controls.zMin;      
+    //   voxelize();
+    // }
+    // if((currMaxZ - controls.zMax) != 0.0){
+    //   currMaxZ = controls.zMax;
+    //   voxelize();
+    // }
     
     stats.end();
 
