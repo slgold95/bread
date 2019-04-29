@@ -34,9 +34,15 @@ float lightIntensity = diffuseTerm + ambientTerm;
 
 // use custom coloring for bread instead of fs_Col
 vec3 color = fs_Col.xyz * lightIntensity;
-out_Col = vec4(clamp(color, 0.0, 1.0), 1.0); // stop colors from blowing out
-// out_Col =vec4(1.0);
-//vec4 colorTexture = texture(u_Texture, fs_Pos.xy);
-//out_Col = colorTexture * lightIntensity;
-//out_Col = vec4(1.0, 0.0, 0.0, 1.0) * lightIntensity;
+
+// for bread coloring
+vec3 crust = vec3(0.6118, 0.4392, 0.2431);
+vec3 innerBread = vec3(0.9647, 0.9686, 0.749);
+
+float t = fs_Col.r;
+// smaller distances get the crust color, farther distances get the innerBread color
+vec3 finalColor = mix(crust, innerBread, 1.0 - t) * lightIntensity;
+
+out_Col = vec4(clamp(finalColor, 0.0, 1.0), 1.0); // stop colors from blowing out
+
 }

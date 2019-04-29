@@ -41,17 +41,15 @@ float lightIntensity = diffuseTerm + ambientTerm;
 vec3 color = fs_Col.xyz * lightIntensity;
 //out_Col = vec4(clamp(color, 0.0, 1.0), 1.0); // stop colors from blowing out
 
-vec4 colorTexture = texture(u_Texture3D, fs_Pos.xyz);
+//vec4 colorTexture = texture(u_Texture, fs_Pos.xy);
+vec4 colorTexture = vec4(0.851, 1.0, 0.0, 1.0);
 // 1 means in the mesh - reading from binary raw file
-if(colorTexture.r == 1.0){
-  colorTexture = vec4(1.0, 0.0, 0.0, 1.0);
-}
-else if(colorTexture.r == 0.0){
-  colorTexture = vec4(0.0, 0.0, 1.0, 1.0);
-}
-out_Col = colorTexture * lightIntensity;
-
-// if(fs_Pos.x < 0.0){
-//   out_Col = vec4(0.0, 1.0, 0.0, 1.0) * lightIntensity;
+// if(colorTexture.r == 1.0){
+//   colorTexture = vec4(1.0, 0.0, 0.0, 1.0);
 // }
+// else if(colorTexture.r == 0.0){
+//   colorTexture = vec4(0.0, 0.0, 1.0, 1.0);
+// }
+out_Col = vec4(1.0, 0.0, 0.0, 1.0);//colorTexture * lightIntensity;
+
 }
