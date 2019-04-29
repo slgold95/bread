@@ -89,8 +89,8 @@
 - Coloring based on distance
     + passing distance information to the fragment shader to interpolate between innerBread and crust color with.
     + Brown color for "outer" voxels
-    + light beige color for "inner" voxels
-    + all uncooked dough is colored the same color (including the crust layer) 
+    + Light beige color for "inner" voxels
+    + All uncooked dough is colored the same color (including the crust layer) 
 - Parameters to hold the GUI information about the xMin, yMin, zMin, xMax, yMax, and zMax sliders passed in to be used in the looping for the number of instances to render. If the looping values (x, y, or z) fall within the thresholds of the slider values, than I "continue" and break out of the for loop for that iteration and skip populating the VBOs with the data that would be contained at that iteration of the loop.
 
 ## Bubble Generation
@@ -101,6 +101,7 @@
     + d is the fractal exponent that models the likelihood of occurrence of spheres in relation with their radii
 - Random voxels are removed from the voxelization to create the appearance of bubbles in the dough
 - Values for the equation parameters are given in the paper; I worked off those values and tuned them until I liked my results
+- Clicking the "Bake" button will get different bubbles generated each time:
 - ![](bubbles1.png) 
 - ![](bubbles2.png)
 - ![](bubbles3.png)
@@ -117,10 +118,10 @@
  + Sliders have a range from 0 to 5 to encompass the entire voxelization.
  + Car without the top:
  + ![](topDownCar.png)
- + Loafs without their tops or bottom layer:
+ + Loafs without their top or bottom layer:
  + ![](topDownLoafs.png)
 - Button to "Bake" the bread, this will generate bubbles in the bread and color the bread crust.
 
 ## Shortcoming
-- Wanted to balloon out the entire voxelization shape when the "bake" button on the GUI was pressed. Had to settle for minor vertex deformation in the end because I couldn't work out a way to get the overall shape to swell. With instance rendering, each voxel was it's own cube with 8 vertices; these cubes didn't have information about what part of the overall .obj file mesh they represented, so I couldn't figure out a way to non-uniformly swell each cube out to where it would be if it were on the .obj file and not it's own cube shape.
+- Wanted to balloon out the entire voxelization shape when the "bake" button on the GUI was pressed. Had to settle for minor vertex deformation in the end because I couldn't work out a way to get the overall shape to swell. With instance rendering, each voxel was it's own cube with eight vertices; these cubes didn't have information about what part of the overall .obj file mesh they represented, so I couldn't figure out a way to non-uniformly swell each cube out to where it would be if it were on the .obj file and not it's own cube shape.
     + Tried to use a cube with more subdivisions to deform the shape a bit more, but then it made the entire program run very slow (at about 4 frames per second) and it was unuseable.
